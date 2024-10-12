@@ -1,0 +1,290 @@
+definitions:
+  schemas.CreateCategory:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  schemas.Login:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  schemas.Register:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  schemas.Response:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  schemas.UpdateCategory:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+info:
+  contact: {}
+paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with username and password
+      parameters:
+      - description: Login Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Login
+      tags:
+      - auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username and password
+      parameters:
+      - description: Register Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.Register'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Register a new user
+      tags:
+      - auth
+  /api/categories:
+    get:
+      description: Retrieve all categories with pagination
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Get all categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category with the given payload
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.CreateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Create a new category
+      tags:
+      - categories
+  /api/categories/{id}:
+    delete:
+      description: Delete a category with the given ID
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Delete a category by ID
+      tags:
+      - categories
+    get:
+      description: Retrieve a category by its ID
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Get a category by ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update a category with the given ID and payload
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category Update Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Update an existing category
+      tags:
+      - categories
+swagger: "2.0"
