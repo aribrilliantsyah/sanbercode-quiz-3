@@ -24,14 +24,26 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.createBookStmt, err = db.PrepareContext(ctx, createBook); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateBook: %w", err)
+	}
 	if q.createCategoryStmt, err = db.PrepareContext(ctx, createCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateCategory: %w", err)
 	}
 	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
 	}
+	if q.deleteBookStmt, err = db.PrepareContext(ctx, deleteBook); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteBook: %w", err)
+	}
 	if q.deleteCategoryStmt, err = db.PrepareContext(ctx, deleteCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteCategory: %w", err)
+	}
+	if q.getBookStmt, err = db.PrepareContext(ctx, getBook); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBook: %w", err)
+	}
+	if q.getBooksByCategoryStmt, err = db.PrepareContext(ctx, getBooksByCategory); err != nil {
+		return nil, fmt.Errorf("error preparing query GetBooksByCategory: %w", err)
 	}
 	if q.getCategoryStmt, err = db.PrepareContext(ctx, getCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCategory: %w", err)
@@ -39,8 +51,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByUsernameStmt, err = db.PrepareContext(ctx, getUserByUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByUsername: %w", err)
 	}
+	if q.listBooksStmt, err = db.PrepareContext(ctx, listBooks); err != nil {
+		return nil, fmt.Errorf("error preparing query ListBooks: %w", err)
+	}
 	if q.listCategoriesStmt, err = db.PrepareContext(ctx, listCategories); err != nil {
 		return nil, fmt.Errorf("error preparing query ListCategories: %w", err)
+	}
+	if q.updateBookStmt, err = db.PrepareContext(ctx, updateBook); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateBook: %w", err)
 	}
 	if q.updateCategoryStmt, err = db.PrepareContext(ctx, updateCategory); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateCategory: %w", err)
@@ -50,6 +68,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.createBookStmt != nil {
+		if cerr := q.createBookStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createBookStmt: %w", cerr)
+		}
+	}
 	if q.createCategoryStmt != nil {
 		if cerr := q.createCategoryStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createCategoryStmt: %w", cerr)
@@ -60,9 +83,24 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createUserStmt: %w", cerr)
 		}
 	}
+	if q.deleteBookStmt != nil {
+		if cerr := q.deleteBookStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteBookStmt: %w", cerr)
+		}
+	}
 	if q.deleteCategoryStmt != nil {
 		if cerr := q.deleteCategoryStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteCategoryStmt: %w", cerr)
+		}
+	}
+	if q.getBookStmt != nil {
+		if cerr := q.getBookStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBookStmt: %w", cerr)
+		}
+	}
+	if q.getBooksByCategoryStmt != nil {
+		if cerr := q.getBooksByCategoryStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getBooksByCategoryStmt: %w", cerr)
 		}
 	}
 	if q.getCategoryStmt != nil {
@@ -75,9 +113,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserByUsernameStmt: %w", cerr)
 		}
 	}
+	if q.listBooksStmt != nil {
+		if cerr := q.listBooksStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listBooksStmt: %w", cerr)
+		}
+	}
 	if q.listCategoriesStmt != nil {
 		if cerr := q.listCategoriesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listCategoriesStmt: %w", cerr)
+		}
+	}
+	if q.updateBookStmt != nil {
+		if cerr := q.updateBookStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateBookStmt: %w", cerr)
 		}
 	}
 	if q.updateCategoryStmt != nil {
@@ -122,27 +170,39 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                    DBTX
-	tx                    *sql.Tx
-	createCategoryStmt    *sql.Stmt
-	createUserStmt        *sql.Stmt
-	deleteCategoryStmt    *sql.Stmt
-	getCategoryStmt       *sql.Stmt
-	getUserByUsernameStmt *sql.Stmt
-	listCategoriesStmt    *sql.Stmt
-	updateCategoryStmt    *sql.Stmt
+	db                     DBTX
+	tx                     *sql.Tx
+	createBookStmt         *sql.Stmt
+	createCategoryStmt     *sql.Stmt
+	createUserStmt         *sql.Stmt
+	deleteBookStmt         *sql.Stmt
+	deleteCategoryStmt     *sql.Stmt
+	getBookStmt            *sql.Stmt
+	getBooksByCategoryStmt *sql.Stmt
+	getCategoryStmt        *sql.Stmt
+	getUserByUsernameStmt  *sql.Stmt
+	listBooksStmt          *sql.Stmt
+	listCategoriesStmt     *sql.Stmt
+	updateBookStmt         *sql.Stmt
+	updateCategoryStmt     *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                    tx,
-		tx:                    tx,
-		createCategoryStmt:    q.createCategoryStmt,
-		createUserStmt:        q.createUserStmt,
-		deleteCategoryStmt:    q.deleteCategoryStmt,
-		getCategoryStmt:       q.getCategoryStmt,
-		getUserByUsernameStmt: q.getUserByUsernameStmt,
-		listCategoriesStmt:    q.listCategoriesStmt,
-		updateCategoryStmt:    q.updateCategoryStmt,
+		db:                     tx,
+		tx:                     tx,
+		createBookStmt:         q.createBookStmt,
+		createCategoryStmt:     q.createCategoryStmt,
+		createUserStmt:         q.createUserStmt,
+		deleteBookStmt:         q.deleteBookStmt,
+		deleteCategoryStmt:     q.deleteCategoryStmt,
+		getBookStmt:            q.getBookStmt,
+		getBooksByCategoryStmt: q.getBooksByCategoryStmt,
+		getCategoryStmt:        q.getCategoryStmt,
+		getUserByUsernameStmt:  q.getUserByUsernameStmt,
+		listBooksStmt:          q.listBooksStmt,
+		listCategoriesStmt:     q.listCategoriesStmt,
+		updateBookStmt:         q.updateBookStmt,
+		updateCategoryStmt:     q.updateCategoryStmt,
 	}
 }

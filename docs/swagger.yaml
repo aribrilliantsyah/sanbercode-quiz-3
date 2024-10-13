@@ -1,4 +1,24 @@
 definitions:
+  schemas.CreateBook:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      image_url:
+        type: string
+      price:
+        type: integer
+      release_year:
+        type: integer
+      title:
+        type: string
+      total_page:
+        type: integer
+    required:
+    - category_id
+    - title
+    type: object
   schemas.CreateCategory:
     properties:
       name:
@@ -35,6 +55,26 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  schemas.UpdateBook:
+    properties:
+      category_id:
+        type: integer
+      description:
+        type: string
+      image_url:
+        type: string
+      price:
+        type: integer
+      release_year:
+        type: integer
+      title:
+        type: string
+      total_page:
+        type: integer
+    required:
+    - category_id
+    - title
     type: object
   schemas.UpdateCategory:
     properties:
@@ -106,6 +146,185 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /api/books:
+    get:
+      description: Retrieve all books with pagination
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Get all books
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Create a new book with the given payload
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Book Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.CreateBook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Create a new book
+      tags:
+      - books
+  /api/books/{id}:
+    delete:
+      description: Delete a book with the given ID
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Delete a book by ID
+      tags:
+      - books
+    get:
+      description: Retrieve a book by its ID
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Get a book by ID
+      tags:
+      - books
+    put:
+      consumes:
+      - application/json
+      description: Update a book with the given ID and payload
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book Update Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateBook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Update an existing book
+      tags:
+      - books
   /api/categories:
     get:
       description: Retrieve all categories with pagination
@@ -285,6 +504,44 @@ paths:
           schema:
             $ref: '#/definitions/schemas.Response'
       summary: Update an existing category
+      tags:
+      - categories
+  /api/categories/{id}/books:
+    get:
+      description: Retrieve all categories with pagination
+      parameters:
+      - description: Bearer token for authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.Response'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/schemas.Response'
+      summary: Get all categories
       tags:
       - categories
 swagger: "2.0"

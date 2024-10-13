@@ -8,6 +8,22 @@ import (
 	"database/sql"
 )
 
+type Book struct {
+	ID          int64          `json:"id"`
+	Title       string         `json:"title"`
+	Description sql.NullString `json:"description"`
+	ImageUrl    sql.NullString `json:"image_url"`
+	ReleaseYear sql.NullInt32  `json:"release_year"`
+	Price       sql.NullInt32  `json:"price"`
+	TotalPage   sql.NullInt32  `json:"total_page"`
+	Thickness   sql.NullString `json:"thickness"`
+	CategoryID  int64          `json:"category_id"`
+	CreatedAt   sql.NullTime   `json:"created_at"`
+	CreatedBy   sql.NullString `json:"created_by"`
+	ModifiedAt  sql.NullTime   `json:"modified_at"`
+	ModifiedBy  sql.NullString `json:"modified_by"`
+}
+
 type Category struct {
 	ID         int64          `json:"id"`
 	Name       string         `json:"name"`
