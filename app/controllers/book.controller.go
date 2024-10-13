@@ -51,7 +51,7 @@ func (b *BookController) CreateBook(ctx *gin.Context) {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"status":  "failed",
-				"message": "failed to retrieve category with this category id",
+				"message": "failed to retrieve book with this category id",
 			})
 			return
 		}
@@ -169,11 +169,26 @@ func (b *BookController) UpdateBook(ctx *gin.Context) {
 		return
 	}
 
+	if _, err := b.db.GetBook(ctx, id); err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"status":  "failed",
+				"message": "failed to retrieve book with this id",
+			})
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+		})
+		return
+	}
+
 	if _, err := b.db.GetCategory(ctx, payload.CategoryID); err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"status":  "failed",
-				"message": "failed to retrieve category with this category id",
+				"message": "failed to retrieve book with this category id",
 			})
 			return
 		}
@@ -411,6 +426,21 @@ func (b *BookController) DeleteBookById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"status":  "failed",
 			"message": "invalid book id",
+		})
+		return
+	}
+
+	if _, err := b.db.GetBook(ctx, id); err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"status":  "failed",
+				"message": "failed to retrieve book with this id",
+			})
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
 		})
 		return
 	}

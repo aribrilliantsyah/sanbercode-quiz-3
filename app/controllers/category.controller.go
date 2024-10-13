@@ -133,6 +133,21 @@ func (c *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 
+	if _, err := c.db.GetCategory(ctx, id); err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"status":  "failed",
+				"message": "failed to retrieve category with this id",
+			})
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"status":  "failed",
+			"message": err.Error(),
+		})
+		return
+	}
+
 	now := time.Now()
 	args := &db.UpdateCategoryParams{
 		ID:         id,
@@ -306,8 +321,7 @@ func (c *CategoryController) DeleteCategoryById(ctx *gin.Context) {
 		return
 	}
 
-	_, err = c.db.GetCategory(ctx, id)
-	if err != nil {
+	if _, err := c.db.GetCategory(ctx, id); err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"status":  "failed",
@@ -316,7 +330,7 @@ func (c *CategoryController) DeleteCategoryById(ctx *gin.Context) {
 			return
 		}
 		ctx.JSON(http.StatusBadGateway, gin.H{
-			"status":  "failed retrieving category",
+			"status":  "failed",
 			"message": err.Error(),
 		})
 		return
